@@ -1,41 +1,34 @@
 package org.example.liba.controller;
 
-import org.example.liba.model.Item;
-import org.example.liba.repository.ItemRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.liba.entity.Category;
+import org.example.liba.entity.Item;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.Set;
 
-@Controller
-@RequestMapping("/items")
+@RestController
 public class ItemController {
-    @Autowired
-    private ItemRepository itemRepository;
-    @GetMapping
-    public String listItems(Model model){
-        List<Item> items = itemRepository.findAll();
-        model.addAttribute("items", items);
-        return "items/list";
-    }
-    @PostMapping
-    public String saveItem(@ModelAttribute Item item){
-        itemRepository.save(item);
-        return "redirect:/items";
-    }
+    @GetMapping("/item")
+    public ResponseEntity<Item> getItem(){
+        Item item = new Item.ItemBuilder()
+                .setItemId("123")
+                .setName("Sample Item")
+                .setRating(4.5)
+                .setDistance(1.5)
+                //.setCategories(Set.of("Category1", "Category2"))
+                .setUrl("http://example.com/item")
+                .setAddress("123 Sample St, Sample City")
+                .setImageUrl("http://example.com/image.jpg")
+                .build();
+//        item.setId(Long.valueOf("123"));
 
-    @PostMapping("/{id}")
-    public String updateItem(@PathVariable Long id, @ModelAttribute Item item){
-        item.setId(id);
-        itemRepository.save(item);
-        return "redirect:/items";
-    }
-
-    @PostMapping("/{id}/delete")
-    public String deleteitem(@PathVariable Long id){
-        itemRepository.deleteById(id);
-        return "redirect:/items";
+        return ResponseEntity.ok(item);
     }
 }
+
+

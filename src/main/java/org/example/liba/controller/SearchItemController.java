@@ -13,7 +13,7 @@ import java.util.Arrays;
 
 @RestController
 public class SearchItemController {
-    @GetMapping("/search")
+ //   @GetMapping("/search")
 //    public String searchItems(@RequestParam(value = "name", defaultValue = "World") String name){
 //        return String.format("hello %s!", name);
 //    }
