@@ -14,24 +14,30 @@ import java.time.LocalDateTime;
 import java.util.Set;
 @Entity
 @Table(name="items")
-//@Document(collection = "items")
+@Document(collection = "items") // mongoDB annotation
 @JsonSerialize
 @JsonDeserialize
 public class Item implements Serializable {
-    @Id
-    private String id;
-    @Column(name = "item_id", unique = true)
-    private String itemId;
+    @Id // JPA ID
+    @JsonProperty("id")
+    private String id; // Use String for the ID type to be compatible with MongoDB
 
+    // Explicitly map the field to the item_id column in the table and make it uniqueMore actions
+    @Column(name = "item_id", unique = true)
+    @JsonProperty("item_id")
+    private String itemId;
     private String name;
     private double rating;
+
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @Column(name = "date_time")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dateTime;
+
     private double price;
     private String address;
+
     @ManyToMany(mappedBy = "items")
     private Set<Category> categories;
 
@@ -39,10 +45,13 @@ public class Item implements Serializable {
     private String url;
     private double distance;
 
-    private Item(ItemBuilder builder){
+    private Item(ItemBuilder builder) {
+        this.id = builder.id;
         this.itemId = builder.itemId;
         this.name = builder.name;
         this.rating = builder.rating;
+        this.dateTime = builder.dateTime;
+        this.price = builder.price;
         this.address = builder.address;
         this.categories = builder.categories;
         this.imageUrl = builder.imageUrl;
@@ -52,15 +61,29 @@ public class Item implements Serializable {
 
     public Item(){}
 
+    public void setCategories(Set<Category> savedCategories) {
+    }
+
+    public void setId(String id) {
+    }
+
     public static class ItemBuilder{
-        private String itemId;
+        public String itemId;
+        private String id;
         private String name;
         private double rating;
+        private LocalDateTime dateTime;
+        private double price;
         private String address;
         private Set<Category> categories;
         private String imageUrl;
         private String url;
         private double distance;
+
+        public ItemBuilder setId(String id) {
+            this.id = id;
+            return this;
+        }
 
         public ItemBuilder setItemId(String itemId) {
             this.itemId = itemId;
@@ -74,6 +97,16 @@ public class Item implements Serializable {
 
         public ItemBuilder setRating(double rating) {
             this.rating = rating;
+            return this;
+        }
+
+        public ItemBuilder setPrice(double price) {
+            this.price = price;
+            return this;
+        }
+
+        public ItemBuilder setDateTime(LocalDateTime dateTime) {
+            this.dateTime = dateTime;
             return this;
         }
 
@@ -108,6 +141,10 @@ public class Item implements Serializable {
 
     }
 
+    public String getId() {
+        return id;
+    }
+
     public String getItemId() {
         return itemId;
     }
@@ -118,6 +155,14 @@ public class Item implements Serializable {
 
     public double getRating() {
         return rating;
+    }
+
+    public LocalDateTime getDateTime() {
+        return dateTime;
+    }
+
+    public double getPrice() {
+        return price;
     }
 
     public String getAddress() {
@@ -143,9 +188,11 @@ public class Item implements Serializable {
     @Override
     public String toString() {
         return "Item{" +
-                "itemId='" + itemId + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", rating=" + rating +
+                ", dateTime='" + dateTime + '\'' +
+                ", price='" + price + '\'' +
                 ", address='" + address + '\'' +
                 ", categories=" + categories +
                 ", imageUrl='" + imageUrl + '\'' +

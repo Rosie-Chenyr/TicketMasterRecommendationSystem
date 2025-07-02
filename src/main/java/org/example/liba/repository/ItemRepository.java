@@ -1,12 +1,11 @@
 package org.example.liba.repository;
 
 import org.example.liba.entity.Item;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
-public interface ItemRepository extends JpaRepository<Item, String>{
+public interface ItemRepository {
     List<Item> findByItemId(String itemId);
+
+    Item save(Item item);
 }

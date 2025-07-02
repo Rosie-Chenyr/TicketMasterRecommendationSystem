@@ -18,9 +18,24 @@ public class MySQLTableCreation implements CommandLineRunner {
     @Value("${spring.datasource.url}")
     private String url;
 
+    @Value("${spring.datasource.username}")
+    private String username;
+
+    @Value("${spring.datasource.password}")
+    private String password;
+
+    @Value("${database.type}")
+    private String databaseType;
+
     @Override
     public void run(String... args) throws Exception {
-        try (Connection conn = DriverManager.getConnection(url);
+
+        if (!"mysql".equalsIgnoreCase(databaseType)) {
+            logger.info("Database type is not MySQL, skip MySQL table creation.");
+            return;
+        }
+
+        try (Connection conn = DriverManager.getConnection(url, username, password);
              Statement statement = conn.createStatement()) {
             // Connect to MySQL
             System.out.println("Connecting to " + url);
@@ -28,7 +43,6 @@ public class MySQLTableCreation implements CommandLineRunner {
             // Create new tables
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS items ("
                     + "id VARCHAR(255) NOT NULL UNIQUE PRIMARY KEY,"
-                    + "item_id VARCHAR(255) NOT NULL UNIQUE," // UNIQUE constraint here
                     + "name VARCHAR(255),"
                     + "rating FLOAT,"
                     + "address VARCHAR(255),"
@@ -39,21 +53,20 @@ public class MySQLTableCreation implements CommandLineRunner {
                     + "distance FLOAT"
                     + ");");
 
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS categories (\n" +
-                    "    name VARCHAR(255) NOT NULL PRIMARY KEY\n" +
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS categories (" +
+                    "    name VARCHAR(255) NOT NULL PRIMARY KEY" +
                     ");");
 
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS categories_items (" +
                     "    category_name VARCHAR(255) NOT NULL," +
                     "    item_id VARCHAR(255) NOT NULL," +
                     "    PRIMARY KEY (category_name, item_id)," +
-                    "    FOREIGN KEY (item_id) REFERENCES items(item_id)," +
+                    "    FOREIGN KEY (item_id) REFERENCES items(id)," +
                     "    FOREIGN KEY (category_name) REFERENCES categories(name)" +
                     ");");
 
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS users ("
                     + "id VARCHAR(255) NOT NULL UNIQUE PRIMARY KEY,"
-                    + "user_id VARCHAR(255) NOT NULL UNIQUE,"
                     + "password VARCHAR(255) NOT NULL,"
                     + "first_name VARCHAR(255),"
                     + "last_name VARCHAR(255)"
@@ -64,12 +77,12 @@ public class MySQLTableCreation implements CommandLineRunner {
                     + "user_id VARCHAR(255) NOT NULL,"
                     + "item_id VARCHAR(255) NOT NULL,"
                     + "last_favor_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,"
-                    + "FOREIGN KEY (user_id) REFERENCES users(user_id),"
-                    + "FOREIGN KEY (item_id) REFERENCES items(item_id)"
+                    + "FOREIGN KEY (user_id) REFERENCES users(id),"
+                    + "FOREIGN KEY (item_id) REFERENCES items(id)"
                     + ");");
 
             // Insert a fake user
-            statement.executeUpdate("INSERT IGNORE INTO users (user_id, password, first_name, last_name)" +
+            statement.executeUpdate("INSERT IGNORE INTO users (id, password, first_name, last_name)" +
                     " VALUES ('1111', 'mypassword', 'John', 'Smith')");
 
             logger.info("MySQL initialization is done.");

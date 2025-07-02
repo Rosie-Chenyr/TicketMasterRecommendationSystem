@@ -7,7 +7,7 @@ import java.util.Set;
 
 @Entity
 @Table(name="categories")
-//@Document(collection = "categories") // MongoDB annotation
+@Document(collection = "categories") // MongoDB annotation
 public class Category {
 
     @Id

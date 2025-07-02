@@ -1,0 +1,593 @@
+Index: src/main/java/org/example/liba/LibaApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/liba/LibaApplication.java b/src/main/java/org/example/liba/LibaApplication.java
+--- a/src/main/java/org/example/liba/LibaApplication.java	(revision 5720143a65940267c3d4fc41e067652719e29151)
++++ b/src/main/java/org/example/liba/LibaApplication.java	(date 1744761740928)
+@@ -4,23 +4,14 @@
+ import org.springframework.boot.autoconfigure.SpringBootApplication;
+ import org.springframework.context.annotation.Bean;
+ import org.springframework.web.client.RestTemplate;
+-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+-import org.springframework.boot.autoconfigure.domain.EntityScan;
+ 
+ 
+ @SpringBootApplication
+-//@EnableJpaRepositories(basePackages = "org.example.liba.repository")
+-//@EntityScan(basePackages = "org.example.liba.model")
+ public class LibaApplication {
+ 
+     public static void main(String[] args) {
+         SpringApplication.run(LibaApplication.class, args);
+     }
+-
+-    @Bean
+-    public RestTemplate restTemplate() {
+-        return new RestTemplate();
+-    }
+ }
+ 
+ 
+Index: src/main/java/org/example/liba/db/MySQLTableCreation.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/liba/db/MySQLTableCreation.java b/src/main/java/org/example/liba/db/MySQLTableCreation.java
+--- a/src/main/java/org/example/liba/db/MySQLTableCreation.java	(revision 5720143a65940267c3d4fc41e067652719e29151)
++++ b/src/main/java/org/example/liba/db/MySQLTableCreation.java	(date 1744855567740)
+@@ -28,7 +28,6 @@
+             // Create new tables
+             statement.executeUpdate("CREATE TABLE IF NOT EXISTS items ("
+                     + "id VARCHAR(255) NOT NULL UNIQUE PRIMARY KEY,"
+-                    + "item_id VARCHAR(255) NOT NULL UNIQUE," // UNIQUE constraint here
+                     + "name VARCHAR(255),"
+                     + "rating FLOAT,"
+                     + "address VARCHAR(255),"
+@@ -39,21 +38,20 @@
+                     + "distance FLOAT"
+                     + ");");
+ 
+-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS categories (\n" +
+-                    "    name VARCHAR(255) NOT NULL PRIMARY KEY\n" +
++            statement.executeUpdate("CREATE TABLE IF NOT EXISTS categories (" +
++                    "    name VARCHAR(255) NOT NULL PRIMARY KEY" +
+                     ");");
+ 
+             statement.executeUpdate("CREATE TABLE IF NOT EXISTS categories_items (" +
+                     "    category_name VARCHAR(255) NOT NULL," +
+                     "    item_id VARCHAR(255) NOT NULL," +
+                     "    PRIMARY KEY (category_name, item_id)," +
+-                    "    FOREIGN KEY (item_id) REFERENCES items(item_id)," +
++                    "    FOREIGN KEY (item_id) REFERENCES items(id)," +
+                     "    FOREIGN KEY (category_name) REFERENCES categories(name)" +
+                     ");");
+ 
+             statement.executeUpdate("CREATE TABLE IF NOT EXISTS users ("
+                     + "id VARCHAR(255) NOT NULL UNIQUE PRIMARY KEY,"
+-                    + "user_id VARCHAR(255) NOT NULL UNIQUE,"
+                     + "password VARCHAR(255) NOT NULL,"
+                     + "first_name VARCHAR(255),"
+                     + "last_name VARCHAR(255)"
+@@ -64,12 +62,12 @@
+                     + "user_id VARCHAR(255) NOT NULL,"
+                     + "item_id VARCHAR(255) NOT NULL,"
+                     + "last_favor_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+-                    + "FOREIGN KEY (user_id) REFERENCES users(user_id),"
+-                    + "FOREIGN KEY (item_id) REFERENCES items(item_id)"
++                    + "FOREIGN KEY (user_id) REFERENCES users(id),"
++                    + "FOREIGN KEY (item_id) REFERENCES items(id)"
+                     + ");");
+ 
+             // Insert a fake user
+-            statement.executeUpdate("INSERT IGNORE INTO users (user_id, password, first_name, last_name)" +
++            statement.executeUpdate("INSERT IGNORE INTO users (id, password, first_name, last_name)" +
+                     " VALUES ('1111', 'mypassword', 'John', 'Smith')");
+ 
+             logger.info("MySQL initialization is done.");
+Index: pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/pom.xml b/pom.xml
+--- a/pom.xml	(revision 5720143a65940267c3d4fc41e067652719e29151)
++++ b/pom.xml	(date 1744759344465)
+@@ -40,10 +40,6 @@
+         </dependency>
+         <dependency>
+             <groupId>org.springframework.boot</groupId>
+-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+-        </dependency>
+-        <dependency>
+-            <groupId>org.springframework.boot</groupId>
+             <artifactId>spring-boot-starter-web</artifactId>
+         </dependency>
+         <dependency>
+@@ -51,12 +47,6 @@
+             <artifactId>json</artifactId>
+             <version>20240303</version>
+         </dependency>
+-        <dependency>
+-            <groupId>org.hibernate</groupId>
+-            <artifactId>hibernate-core</artifactId>
+-            <version>5.6.15.Final</version>
+-        </dependency>
+-
+ 
+         <dependency>
+             <groupId>org.springframework.boot</groupId>
+@@ -89,20 +79,6 @@
+             <artifactId>lombok</artifactId>
+             <scope>provided</scope>
+         </dependency>
+-        <dependency>
+-            <groupId>jakarta.persistence</groupId>
+-            <artifactId>jakarta.persistence-api</artifactId>
+-            <version>2.2.3</version>
+-        </dependency>
+-        <dependency>
+-            <groupId>com.h2database</groupId>
+-            <artifactId>h2</artifactId>
+-            <version>1.4.200</version>
+-            <scope>runtime</scope>
+-        </dependency>
+-
+-
+-
+     </dependencies>
+ 
+     <build>
+Index: src/main/java/org/example/liba/entity/Item.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/liba/entity/Item.java b/src/main/java/org/example/liba/entity/Item.java
+--- a/src/main/java/org/example/liba/entity/Item.java	(revision 5720143a65940267c3d4fc41e067652719e29151)
++++ b/src/main/java/org/example/liba/entity/Item.java	(date 1744761740822)
+@@ -20,18 +20,19 @@
+ public class Item implements Serializable {
+     @Id
+     private String id;
+-    @Column(name = "item_id", unique = true)
+-    private String itemId;
+ 
+     private String name;
+     private double rating;
++
+     @JsonSerialize(using = LocalDateTimeSerializer.class)
+     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+     @Column(name = "date_time")
+     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+     private LocalDateTime dateTime;
++
+     private double price;
+     private String address;
++
+     @ManyToMany(mappedBy = "items")
+     private Set<Category> categories;
+ 
+@@ -39,10 +40,12 @@
+     private String url;
+     private double distance;
+ 
+-    private Item(ItemBuilder builder){
+-        this.itemId = builder.itemId;
++    private Item(ItemBuilder builder) {
++        this.id = builder.id;
+         this.name = builder.name;
+         this.rating = builder.rating;
++        this.dateTime = builder.dateTime;
++        this.price = builder.price;
+         this.address = builder.address;
+         this.categories = builder.categories;
+         this.imageUrl = builder.imageUrl;
+@@ -53,17 +56,19 @@
+     public Item(){}
+ 
+     public static class ItemBuilder{
+-        private String itemId;
++        private String id;
+         private String name;
+         private double rating;
++        private LocalDateTime dateTime;
++        private double price;
+         private String address;
+         private Set<Category> categories;
+         private String imageUrl;
+         private String url;
+         private double distance;
+ 
+-        public ItemBuilder setItemId(String itemId) {
+-            this.itemId = itemId;
++        public ItemBuilder setId(String id) {
++            this.id = id;
+             return this;
+         }
+ 
+@@ -77,6 +82,16 @@
+             return this;
+         }
+ 
++        public ItemBuilder setPrice(double price) {
++            this.price = price;
++            return this;
++        }
++
++        public ItemBuilder setDateTime(LocalDateTime dateTime) {
++            this.dateTime = dateTime;
++            return this;
++        }
++
+         public ItemBuilder setAddress(String address) {
+             this.address = address;
+             return this;
+@@ -108,8 +123,8 @@
+ 
+     }
+ 
+-    public String getItemId() {
+-        return itemId;
++    public String getId() {
++        return id;
+     }
+ 
+     public String getName() {
+@@ -120,6 +135,14 @@
+         return rating;
+     }
+ 
++    public LocalDateTime getDateTime() {
++        return dateTime;
++    }
++
++    public double getPrice() {
++        return price;
++    }
++
+     public String getAddress() {
+         return address;
+     }
+@@ -143,9 +166,11 @@
+     @Override
+     public String toString() {
+         return "Item{" +
+-                "itemId='" + itemId + '\'' +
++                "id='" + id + '\'' +
+                 ", name='" + name + '\'' +
+                 ", rating=" + rating +
++                ", dateTime='" + dateTime + '\'' +
++                ", price='" + price + '\'' +
+                 ", address='" + address + '\'' +
+                 ", categories=" + categories +
+                 ", imageUrl='" + imageUrl + '\'' +
+Index: src/main/java/org/example/liba/repository/ItemRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/liba/repository/ItemRepository.java b/src/main/java/org/example/liba/repository/ItemRepository.java
+--- a/src/main/java/org/example/liba/repository/ItemRepository.java	(revision 5720143a65940267c3d4fc41e067652719e29151)
++++ b/src/main/java/org/example/liba/repository/ItemRepository.java	(date 1744761740932)
+@@ -8,5 +8,4 @@
+ 
+ @Repository
+ public interface ItemRepository extends JpaRepository<Item, String>{
+-    List<Item> findByItemId(String itemId);
+ }
+\ No newline at end of file
+Index: src/main/resources/application.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/src/main/resources/application.properties b/src/main/resources/application.properties
+--- a/src/main/resources/application.properties	(revision 5720143a65940267c3d4fc41e067652719e29151)
++++ b/src/main/resources/application.properties	(date 1744945118435)
+@@ -1,17 +1,9 @@
+ spring.application.name=liba
+-spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
++
++# TicketMaster API
+ ticketmaster.api.key=nYCoUhFQ3TtynWG12xOsVXqeOBPzQsHo
+ ticketmaster.url=https://app.ticketmaster.com/discovery/v2/events.json
+ 
+-
+-# JPA ????
+-spring.jpa.hibernate.ddl-auto=update
+-spring.jpa.show-sql=true
+-
+-# H2 ???????
+-spring.h2.console.enabled=true
+-spring.h2.console.path=/h2-console
+-
+ # MySQL connection
+ spring.datasource.url=jdbc:mysql://localhost:3306/libaproject?user=root&password=&autoReconnect=true&serverTimezone=UTC 
+ # spring.datasource.username=root
+Index: src/main/java/org/example/liba/controller/ItemController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/liba/controller/ItemController.java b/src/main/java/org/example/liba/controller/ItemController.java
+--- a/src/main/java/org/example/liba/controller/ItemController.java	(revision 5720143a65940267c3d4fc41e067652719e29151)
++++ b/src/main/java/org/example/liba/controller/ItemController.java	(date 1744761740936)
+@@ -1,34 +1,34 @@
+-package org.example.liba.controller;
+-
+-import org.example.liba.entity.Category;
+-import org.example.liba.entity.Item;
+-import org.springframework.http.ResponseEntity;
+-import org.springframework.stereotype.Controller;
+-import org.springframework.ui.Model;
+-import org.springframework.web.bind.annotation.*;
+-import org.springframework.web.bind.annotation.GetMapping;
+-import org.springframework.web.bind.annotation.RestController;
+-
+-import java.util.Set;
+-
+-@RestController
+-public class ItemController {
+-    @GetMapping("/item")
+-    public ResponseEntity<Item> getItem(){
+-        Item item = new Item.ItemBuilder()
+-                .setItemId("123")
+-                .setName("Sample Item")
+-                .setRating(4.5)
+-                .setDistance(1.5)
+-                //.setCategories(Set.of("Category1", "Category2"))
+-                .setUrl("http://example.com/item")
+-                .setAddress("123 Sample St, Sample City")
+-                .setImageUrl("http://example.com/image.jpg")
+-                .build();
+-//        item.setId(Long.valueOf("123"));
+-
+-        return ResponseEntity.ok(item);
+-    }
+-}
+-
+-
++//package org.example.liba.controller;
++//
++//import org.example.liba.entity.Category;
++//import org.example.liba.entity.Item;
++//import org.springframework.http.ResponseEntity;
++//import org.springframework.stereotype.Controller;
++//import org.springframework.ui.Model;
++//import org.springframework.web.bind.annotation.*;
++//import org.springframework.web.bind.annotation.GetMapping;
++//import org.springframework.web.bind.annotation.RestController;
++//
++//import java.util.Set;
++//
++//@RestController
++//public class ItemController {
++//    @GetMapping("/item")
++//    public ResponseEntity<Item> getItem(){
++//        Item item = new Item.ItemBuilder()
++//                .setItemId("123")
++//                .setName("Sample Item")
++//                .setRating(4.5)
++//                .setDistance(1.5)
++//                //.setCategories(Set.of("Category1", "Category2"))
++//                .setUrl("http://example.com/item")
++//                .setAddress("123 Sample St, Sample City")
++//                .setImageUrl("http://example.com/image.jpg")
++//                .build();
++////        item.setId(Long.valueOf("123"));
++//
++//        return ResponseEntity.ok(item);
++//    }
++//}
++//
++//
+Index: src/main/java/org/example/liba/controller/TicketMasterController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/liba/controller/TicketMasterController.java b/src/main/java/org/example/liba/controller/TicketMasterController.java
+--- a/src/main/java/org/example/liba/controller/TicketMasterController.java	(revision 5720143a65940267c3d4fc41e067652719e29151)
++++ b/src/main/java/org/example/liba/controller/TicketMasterController.java	(date 1744760663194)
+@@ -20,11 +20,10 @@
+ 
+ @RestController
+ public class TicketMasterController {
+-    @Autowired
+     private final TicketMasterService ticketMasterService;
++    private final ItemService itemService;
++
+     @Autowired
+-    private final ItemService itemService;
+-
+     public TicketMasterController(TicketMasterService ticketMasterService, ItemService itemService) {
+         this.ticketMasterService = ticketMasterService;
+         this.itemService = itemService;
+@@ -37,7 +36,7 @@
+             @RequestParam(required = false) String keyword) {
+         try{
+             List<Item> res = ticketMasterService.search(lat, lon, keyword);
+-            for(Item item:res){
++            for (Item item : res) {
+                 itemService.saveItem(item);
+             }
+             return ResponseEntity.ok(res);
+Index: src/main/java/org/example/liba/service/TicketMasterService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/liba/service/TicketMasterService.java b/src/main/java/org/example/liba/service/TicketMasterService.java
+--- a/src/main/java/org/example/liba/service/TicketMasterService.java	(revision 5720143a65940267c3d4fc41e067652719e29151)
++++ b/src/main/java/org/example/liba/service/TicketMasterService.java	(date 1744855865380)
+@@ -4,12 +4,12 @@
+ import com.fasterxml.jackson.databind.ObjectMapper;
+ import org.example.liba.entity.Category;
+ import org.example.liba.entity.Item;
++import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.beans.factory.annotation.Value;
+ 
+ 
+ import org.springframework.context.annotation.PropertySource;
+ import org.springframework.stereotype.Service;
+-import org.springframework.web.client.RestTemplate;
+ 
+ import java.io.BufferedReader;
+ import java.io.InputStreamReader;
+@@ -17,30 +17,25 @@
+ import java.net.HttpURLConnection;
+ import java.net.URL;
+ import java.net.URLEncoder;
+-import java.util.ArrayList;
+-import java.util.HashSet;
+-import java.util.List;
+-import java.util.Set;
++import java.time.LocalDateTime;
++import java.util.*;
+ 
+ @PropertySource("classpath:application.properties")
+ @Service
+ public class TicketMasterService {
+     private static final String URL = "https://app.ticketmaster.com/discovery/v2/events.json";
+     private static final String DEFAULT_KEYWORD = "";
+-    //private static final String API_KEY = "nYCoUhFQ3TtynWG12xOsVXqeOBPzQsHo";
+-
+-    private final RestTemplate restTemplate;
+ 
+     @Value("${ticketmaster.api.key}")
+     private String apiKey;
+ 
+     @Value("${ticketmaster.url}")
+     private String ticketMasterURL;
++
+     private final ObjectMapper objectMapper;
+ 
+-
+-    public TicketMasterService(RestTemplate restTemplate, ObjectMapper objectMapper){
+-        this.restTemplate = restTemplate;
++    @Autowired
++    public TicketMasterService(ObjectMapper objectMapper){
+         this.objectMapper = objectMapper;
+     }
+ 
+@@ -48,8 +43,10 @@
+         List<Item> itemList = new ArrayList<>();
+         for(JsonNode event:events){
+             Item.ItemBuilder builder = new Item.ItemBuilder();
+-            builder.setItemId(event.path("id").asText())
++            builder.setId(event.path("id").asText())
+                     .setName(event.path("name").asText())
++                    .setDateTime(getDateTime(event))
++                    .setPrice(getPrice(event))
+                     .setAddress(getAddress(event))
+                     .setUrl(event.path("url").asText())
+                     .setDistance(Double.parseDouble(event.path("distance").asText()))
+@@ -59,6 +56,42 @@
+         }
+         return itemList;
+     }
++
++    private LocalDateTime getDateTime(JsonNode event) {
++        if (event.has("dates") && event.get("dates").has("start")) {
++            JsonNode startDate = event.get("dates").get("start");
++            if (startDate.has("localDate")) {
++                String dateStr = startDate.get("localDate").asText();
++                String timeStr = startDate.has("localTime") ?
++                        startDate.get("localTime").asText() : "00:00";
++
++                try {
++                    LocalDateTime eventDateTime = LocalDateTime.parse(
++                            dateStr + "T" + timeStr
++                    );
++                    return eventDateTime;
++                } catch (Exception e) {
++                    System.err.println("Error parsing date: " + dateStr + " " + timeStr);
++                    e.printStackTrace();
++                }
++            }
++        }
++        return null;
++    }
++
++    private double getPrice(JsonNode event) {
++        if (event.has("priceRanges") && event.get("priceRanges").size() > 0) {
++            JsonNode priceRange = event.get("priceRanges").get(0);
++            if (priceRange.has("min")) {
++                double price = priceRange.get("min").asDouble();
++                return price;
++            }
++        }
++        return 0;
++    }
++
++
++
+     private String getAddress(JsonNode event){
+         if (event.has("_embedded")) {
+             JsonNode embedded = event.get("_embedded");
+@@ -103,6 +136,7 @@
+         }
+         return "";
+     }
++
+     private Set<Category> getCategories(JsonNode event){
+         Set<Category> categories = new HashSet<>();
+         if (event.has("classifications")) {
+Index: src/main/java/org/example/liba/service/ItemService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/liba/service/ItemService.java b/src/main/java/org/example/liba/service/ItemService.java
+--- a/src/main/java/org/example/liba/service/ItemService.java	(revision 5720143a65940267c3d4fc41e067652719e29151)
++++ b/src/main/java/org/example/liba/service/ItemService.java	(date 1744856051656)
+@@ -1,25 +1,40 @@
+ package org.example.liba.service;
+ 
++import org.example.liba.entity.Category;
+ import org.example.liba.entity.Item;
++import org.example.liba.repository.CategoryRepository;
+ import org.example.liba.repository.ItemRepository;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Service;
++import org.springframework.transaction.annotation.Transactional;
+ 
+-import java.util.List;
++import java.util.Set;
+ 
+ @Service
+ public class ItemService {
+     private final ItemRepository itemRepository;
++    private final CategoryRepository categoryRepository;
+ 
+     @Autowired
+-    public ItemService(ItemRepository itemRepository) {
++    public ItemService(ItemRepository itemRepository, CategoryRepository categoryRepository) {
+         this.itemRepository = itemRepository;
++        this.categoryRepository = categoryRepository;
+     }
+ 
+-    public void saveItem(Item item){
+-        List<Item> res = itemRepository.findByItemId(item.getItemId());
+-        if(res.isEmpty()){
+-            itemRepository.save(item);
++    @Transactional
++    public void saveItem(Item item) {
++        saveNewCategories(item.getCategories());
++        itemRepository.save(item);
++    }
++
++    private void saveNewCategories(Set<Category> categories) {
++        if (categories != null) {
++            for (Category category : categories) {
++                // Check if Category already exists
++                if (!categoryRepository.existsById(category.getName())) {
++                    categoryRepository.save(category);
++                }
++            }
+         }
+     }
+ }

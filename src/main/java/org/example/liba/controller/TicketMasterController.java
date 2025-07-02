@@ -1,11 +1,9 @@
 package org.example.liba.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 import org.example.liba.entity.Item;
-import org.example.liba.repository.ItemRepository;
 import org.example.liba.service.ItemService;
 import org.example.liba.service.TicketMasterService;
-import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,17 +12,19 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
 
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
+
 import java.util.List;
 
+import static org.example.liba.service.TicketMasterService.DEFAULT_RADIUS;
+
 @RestController
+@Slf4j
 public class TicketMasterController {
-    @Autowired
     private final TicketMasterService ticketMasterService;
-    @Autowired
     private final ItemService itemService;
 
+
+    @Autowired
     public TicketMasterController(TicketMasterService ticketMasterService, ItemService itemService) {
         this.ticketMasterService = ticketMasterService;
         this.itemService = itemService;
@@ -35,14 +35,15 @@ public class TicketMasterController {
             @RequestParam double lat,
             @RequestParam double lon,
             @RequestParam(required = false) String keyword) {
-        try{
-            List<Item> res = ticketMasterService.search(lat, lon, keyword);
-            for(Item item:res){
-                itemService.saveItem(item);
-            }
-            return ResponseEntity.ok(res);
-        } catch(Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Unable to process the request\"}");
+        log.info("TicketMasterController entered with parameters lat%s, lon%s, keyword%s ", lat, lon, keyword);
+        List<Item> result = ticketMasterService.searchByLatLon(lat, lon, keyword, DEFAULT_RADIUS);
+        log.info("Get result%s ", result.get(0));
+        if (!result.isEmpty()) {
+            log.info("Result is empty ");
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(result);
         }
     }
 }
