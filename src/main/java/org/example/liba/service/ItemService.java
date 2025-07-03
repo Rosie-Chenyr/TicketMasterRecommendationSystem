@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -27,11 +28,11 @@ public class ItemService {
     @Transactional
     public Item saveItem(Item item) {
         // Check if the itemId is already in the database
-        List<Item> existingItems = itemRepository.findByItemId(item.getItemId());
+        Optional<Item> existingItems = itemRepository.findById(item.getId());
         if (!existingItems.isEmpty()) {
             // If item already exists, skip saving and just return the existing item
             System.out.println("Item already exists: " + item.getItemId());
-            return existingItems.get(0); // return the first matched item from the database
+            return existingItems.get(); // return the first matched item from the database
         }
 
         // If item doesn't exist, save it

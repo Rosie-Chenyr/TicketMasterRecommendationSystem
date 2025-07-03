@@ -4,6 +4,7 @@ import org.example.liba.dto.ItemResponse;
 import org.example.liba.entity.Item;
 import org.example.liba.service.HistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/history")
@@ -19,7 +21,10 @@ public class ItemHistoryController {
     @Autowired
     private HistoryService historyService;
     @PostMapping
-    public ResponseEntity<String> setFavoriteItems(@RequestBody String body){
+    public ResponseEntity<String> setFavoriteItems(@RequestBody String body, HttpSession session){
+        if (!ControllerHelper.verifySession(session)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Please log in first.");
+        }
         try{
             Map<String, Object> input = ControllerHelper.readJsonFromBody(body);
             String userId = (String) input.get("user_id");
@@ -32,7 +37,10 @@ public class ItemHistoryController {
     }
 
     @DeleteMapping
-    public ResponseEntity<String> unsetFavoriteItems(@RequestBody String body){
+    public ResponseEntity<String> unsetFavoriteItems(@RequestBody String body, HttpSession session){
+        if (!ControllerHelper.verifySession(session)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Please log in first.");
+        }
         try{
             Map<String, Object> input = ControllerHelper.readJsonFromBody(body);
             String userId = (String) input.get("user_id");
@@ -45,9 +53,11 @@ public class ItemHistoryController {
     }
 
     @GetMapping
-    public ResponseEntity<String> getFavoriteItems(@RequestParam String userId){
+    public ResponseEntity<String> getFavoriteItems(@RequestParam String userId, HttpSession session){
+        if (!ControllerHelper.verifySession(session)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Please log in first.");
+        }
         Set<Item> favoriteItems = historyService.getFavoriteItems(userId);
-
         try{
             List<ItemResponse> itemResponses = favoriteItems.stream()
                     .map(item -> new ItemResponse(item, true))

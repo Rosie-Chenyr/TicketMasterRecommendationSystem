@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import javax.servlet.http.HttpSession;
 import java.util.Map;
 
 public class ControllerHelper {
@@ -32,5 +33,11 @@ public class ControllerHelper {
         } catch (IOException e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating response");
         }
+    }
+
+    //New: Verify if session is valid
+    public static boolean verifySession(HttpSession session) {
+        // Check if session exists and contains a valid user ID
+        return session != null && session.getAttribute("user_id") != null;
     }
 }

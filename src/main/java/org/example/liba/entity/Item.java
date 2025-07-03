@@ -22,7 +22,7 @@ public class Item implements Serializable {
     @JsonProperty("id")
     private String id; // Use String for the ID type to be compatible with MongoDB
 
-    // Explicitly map the field to the item_id column in the table and make it uniqueMore actions
+    // Explicitly map the field to the item_id column in the table and make it unique
     @Column(name = "item_id", unique = true)
     @JsonProperty("item_id")
     private String itemId;

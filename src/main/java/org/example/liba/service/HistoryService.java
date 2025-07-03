@@ -23,27 +23,29 @@ public class HistoryService {
     @Autowired
     private ItemRepository itemRepository;
 
-    public void setFavoriteItems(String userId, List<String> itemIds){
-        for(String itemId : itemIds){
-            List<Item> existingItems = itemRepository.findByItemId(itemId);
+    public void setFavoriteItems(String userId, List<String> ids){
+        for(String id : ids){
+            Optional<Item> existingItems = itemRepository.findById(id);
             if(!existingItems.isEmpty()){
-                log.info("existintItems is NOT Empty");
-                Item item = existingItems.get(0);
+                log.info("existing Items is NOT Empty");
+                Item item = existingItems.get();
                 History history = new History();
                 history.setUserId(userId);
                 history.setId(UUID.randomUUID().toString());
                 history.setItem(item);
-                historyRepository.save(history);
-                log.info("history%s is saved ", history);
+                if(!historyRepository.existsByUserIdAndItemId(userId, id)){
+                    historyRepository.save(history);
+                    log.info("history%s is saved ", history);
+                }
             }
-            log.info("existintItems is Empty");
+            log.info("existing Items is Empty");
         }
     }
 
     @Transactional
-    public void unsetFavoriteItems(String userId, List<String> itemIds){
-        for(String itemId : itemIds){
-            historyRepository.deleteByUserIdAndItem_ItemId(userId, itemId);
+    public void unsetFavoriteItems(String userId, List<String> ids){
+        for(String id : ids){
+            historyRepository.deleteByUserIdAndItemId(userId, id);
         }
     }
 

@@ -37,6 +37,9 @@ public class TicketMasterController {
             @RequestParam(required = false) String keyword) {
         log.info("TicketMasterController entered with parameters lat%s, lon%s, keyword%s ", lat, lon, keyword);
         List<Item> result = ticketMasterService.searchByLatLon(lat, lon, keyword, DEFAULT_RADIUS);
+        for (Item item : result) {
+            itemService.saveItem(item);
+        }
         log.info("Get result%s ", result.get(0));
         if (!result.isEmpty()) {
             log.info("Result is empty ");

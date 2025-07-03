@@ -1,14 +1,18 @@
 package org.example.liba.config;
 
+import org.example.liba.entity.User;
 import org.example.liba.repository.CategoryRepository;
 import org.example.liba.repository.HistoryRepository;
 import org.example.liba.repository.ItemRepository;
+import org.example.liba.repository.UserRepository;
 import org.example.liba.repository.mongodb.MongoCategoryRepository;
 import org.example.liba.repository.mongodb.MongoHistoryRepository;
 import org.example.liba.repository.mongodb.MongoItemRepository;
+import org.example.liba.repository.mongodb.MongoUserRepository;
 import org.example.liba.repository.mysql.MySQLCategoryRepository;
 import org.example.liba.repository.mysql.MySQLHistoryRepository;
 import org.example.liba.repository.mysql.MySQLItemRepository;
+import org.example.liba.repository.mysql.MySQLUserRepository;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -34,13 +38,18 @@ public class RepositoryConfig {
     private final ObjectProvider<MySQLCategoryRepository> mySQLCategoryRepositoryProvider;
     private final ObjectProvider<MongoCategoryRepository> mongoCategoryRepositoryProvider;
 
+    private final ObjectProvider<MySQLUserRepository> mySQLUserRepositoryProvider;
+    private final ObjectProvider<MongoUserRepository> mongoUserRepositoryProvider;
+
     public RepositoryConfig(
             ObjectProvider<MySQLItemRepository> mySQLItemRepositoryProvider,
             ObjectProvider<MongoItemRepository> mongoItemRepositoryProvider,
             ObjectProvider<MySQLHistoryRepository> mySQLHistoryRepositoryProvider,
             ObjectProvider<MongoHistoryRepository> mongoHistoryRepositoryProvider,
             ObjectProvider<MySQLCategoryRepository> mySQLCategoryRepositoryProvider,
-            ObjectProvider<MongoCategoryRepository> mongoCategoryRepositoryProvider
+            ObjectProvider<MongoCategoryRepository> mongoCategoryRepositoryProvider,
+            ObjectProvider<MySQLUserRepository> mySQLUserRepositoryProvider,
+            ObjectProvider<MongoUserRepository> mongoUserRepositoryProvider
     ) {
         this.mySQLItemRepositoryProvider = mySQLItemRepositoryProvider;
         this.mongoItemRepositoryProvider = mongoItemRepositoryProvider;
@@ -48,6 +57,8 @@ public class RepositoryConfig {
         this.mongoHistoryRepositoryProvider = mongoHistoryRepositoryProvider;
         this.mySQLCategoryRepositoryProvider = mySQLCategoryRepositoryProvider;
         this.mongoCategoryRepositoryProvider = mongoCategoryRepositoryProvider;
+        this.mongoUserRepositoryProvider = mongoUserRepositoryProvider;
+        this.mySQLUserRepositoryProvider = mySQLUserRepositoryProvider;
     }
 
     @Bean
@@ -74,6 +85,15 @@ public class RepositoryConfig {
             return mySQLCategoryRepositoryProvider.getIfAvailable();
         } else {
             return mongoCategoryRepositoryProvider.getIfAvailable();
+        }
+    }
+
+    @Bean
+    public UserRepository userRepository() {
+        if (dbType.equalsIgnoreCase(mysql)) {
+            return mySQLUserRepositoryProvider.getIfAvailable();
+        } else {
+            return mongoUserRepositoryProvider.getIfAvailable();
         }
     }
 
